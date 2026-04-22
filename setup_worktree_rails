@@ -1,0 +1,37 @@
+#!/usr/bin/env bash
+set -e
+
+MAIN_WORKTREE=$(git worktree list | head -1 | awk '{print $1}')
+CURRENT_DIR=$(pwd)
+
+echo "Setting up worktree from: $MAIN_WORKTREE"
+
+# Copy gitignored files you need
+FILES_TO_LINK=(
+  ".env"
+  ".env.local"
+  "config/master.key"
+  "config/credentials/production.key"
+  ".kamal/secrets"
+)
+
+for file in "${FILES_TO_LINK[@]}"; do
+  if [ -f "$MAIN_WORKTREE/$file" ] && [ ! -f "$CURRENT_DIR/$file" ]; then
+    # Symlink instead of copy — changes stay in sync
+    ln -s "$MAIN_WORKTREE/$file" "$CURRENT_DIR/$file"
+    echo "  Linked: $file"
+  fi
+done
+
+# Install gems if Gemfile.lock differs
+bundle install
+
+# Prepare DB for this branch
+# bin/rails db:prepare
+# Use the recreation method for now
+
+bin/rails db:create
+bin/rails db:migrate
+bin/rails db:seed
+
+echo "✅ Worktree ready!"

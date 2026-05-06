@@ -16,7 +16,7 @@ FILES_TO_LINK=(
 )
 
 for file in "${FILES_TO_LINK[@]}"; do
-  if [ -f "$MAIN_WORKTREE/$file" ] && [ ! -f "$CURRENT_DIR/$file" ]; then
+  if [ -e "$MAIN_WORKTREE/$file" ] && [ ! -e "$CURRENT_DIR/$file" ]; then
     # Symlink instead of copy — changes stay in sync
     ln -s "$MAIN_WORKTREE/$file" "$CURRENT_DIR/$file"
     echo "  Linked: $file"
@@ -27,11 +27,6 @@ done
 bundle install
 
 # Prepare DB for this branch
-# bin/rails db:prepare
-# Use the recreation method for now
-
-bin/rails db:create
-bin/rails db:migrate
-bin/rails db:seed
+bin/rails db:prepare
 
 echo "✅ Worktree ready!"
